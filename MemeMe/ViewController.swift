@@ -26,17 +26,15 @@ class ViewController: UIViewController {
         bottomText.delegate = self
         setupText()
         setupFunctionality()
-        
     }
     
     func setupText() {
 //        SETUP TEXT
         let memeTextAttributes = [
             NSStrokeColorAttributeName: UIColor.blackColor(),
-//            THIS WHITE COLOR ISN'T SHOWING UP FOR SOME REASON. 
             NSForegroundColorAttributeName: UIColor.whiteColor(),
             NSFontAttributeName: UIFont(name: "HelveticaNeue-CondensedBlack", size: 40)!,
-            NSStrokeWidthAttributeName: 2.0
+            NSStrokeWidthAttributeName: -3.0
         ]
         
         topText.defaultTextAttributes = memeTextAttributes
@@ -49,8 +47,6 @@ class ViewController: UIViewController {
     
     override func viewWillAppear(animated: Bool) {
         cameraButton.enabled = UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera)
-        
-        self.subscribeToKeyboardNotifications()
     }
     
     override func viewWillDisappear(animated: Bool) {
@@ -98,11 +94,6 @@ class ViewController: UIViewController {
         topText.resignFirstResponder()
         view.endEditing(true)
     }
-//    func getKeyboardHeight(notification:NSNotification) -> CGFloat {
-//        let userInfo = notification.userInfo
-//        let info = userInfo![UIKeyboardFrameBeginUserInfoKey] as! NSValue
-//        return info.CGRectValue().size.height
-//    }
     
     @IBAction func pickAnImage(sender: AnyObject) {
         let pickerController = UIImagePickerController()
@@ -178,6 +169,13 @@ extension ViewController: UINavigationControllerDelegate {
 }
 
 extension ViewController: UITextFieldDelegate {
+    
+    func textFieldShouldBeginEditing(textField: UITextField) -> Bool {
+        if textField.tag == 101 {
+            subscribeToKeyboardNotifications()
+        }
+        return true
+    }
 
     func textFieldDidBeginEditing(textField: UITextField) {
         if textField.text == "TOP" || textField.text == "BOTTOM" {
@@ -191,6 +189,7 @@ extension ViewController: UITextFieldDelegate {
         } else if textField.tag == 101 && textField.text == "" {
             textField.text = "BOTTOM"
         }
+        unSubscribeFromKeyboardNotifications()
     }
     
     func textFieldShouldReturn(textField: UITextField) -> Bool {
