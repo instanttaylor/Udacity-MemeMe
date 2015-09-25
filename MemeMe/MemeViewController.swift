@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  MemeViewController.swift
 //  MemeMe
 //
 //  Created by Taylor Smith on 9/22/15.
@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class MemeViewController: UIViewController {
 
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var cameraButton: UIBarButtonItem!
@@ -24,11 +24,12 @@ class ViewController: UIViewController {
         
         topText.delegate = self
         bottomText.delegate = self
-        setupText()
+        setupText(topText)
+        setupText(bottomText)
         setupFunctionality()
     }
     
-    func setupText() {
+    func setupText(field: UITextField) {
 //        SETUP TEXT
         let memeTextAttributes = [
             NSStrokeColorAttributeName: UIColor.blackColor(),
@@ -37,20 +38,19 @@ class ViewController: UIViewController {
             NSStrokeWidthAttributeName: -3.0
         ]
         
-        topText.defaultTextAttributes = memeTextAttributes
-        bottomText.defaultTextAttributes = memeTextAttributes
-        topText.textAlignment = .Center
-        bottomText.textAlignment = .Center
-        topText.autocapitalizationType = UITextAutocapitalizationType.AllCharacters
-        bottomText.autocapitalizationType = UITextAutocapitalizationType.AllCharacters
+        field.defaultTextAttributes = memeTextAttributes
+        field.textAlignment = .Center
+        field.autocapitalizationType = UITextAutocapitalizationType.AllCharacters
     }
     
     override func viewWillAppear(animated: Bool) {
         cameraButton.enabled = UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera)
+        super.viewWillAppear(true)
     }
     
     override func viewWillDisappear(animated: Bool) {
-        self.unSubscribeFromKeyboardNotifications()
+        unSubscribeFromKeyboardNotifications()
+        super.viewWillDisappear(true)
     }
     
     func subscribeToKeyboardNotifications() {
@@ -73,13 +73,13 @@ class ViewController: UIViewController {
     
     func moveViewForKeyboard(show:Bool, notification:NSNotification) {
         var userInfo = notification.userInfo!
-        let keyboardFrame:CGRect = (userInfo[UIKeyboardFrameBeginUserInfoKey] as! NSValue).CGRectValue()
+        let keyboardFrame:CGRect = (userInfo[UIKeyboardFrameEndUserInfoKey] as! NSValue).CGRectValue()
         let duration = userInfo[UIKeyboardAnimationDurationUserInfoKey] as! NSTimeInterval
         
         if show {
             let changeInHeight = (CGRectGetHeight(keyboardFrame))
             UIView.animateWithDuration(0.5, animations: { () -> Void in
-                self.view.frame.origin.y -= changeInHeight
+                self.view.frame.origin.y = -changeInHeight
             })
         } else {
             UIView.animateWithDuration(duration, animations: { () -> Void in
@@ -99,19 +99,19 @@ class ViewController: UIViewController {
         let pickerController = UIImagePickerController()
         pickerController.delegate = self
         pickerController.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
-        self.presentViewController(pickerController, animated: true, completion: nil)
+        presentViewController(pickerController, animated: true, completion: nil)
     }
     
     @IBAction func takeAPicture(sender: AnyObject) {
         let camera = UIImagePickerController()
         camera.delegate = self
         camera.sourceType = UIImagePickerControllerSourceType.Camera
-        self.presentViewController(camera, animated: true, completion: nil)
+        presentViewController(camera, animated: true, completion: nil)
     }
     
     func generateMemedImage() -> UIImage? {
-        UIGraphicsBeginImageContext(self.view.frame.size)
-        self.view.drawViewHierarchyInRect(self.view.frame, afterScreenUpdates: true)
+        UIGraphicsBeginImageContext(view.frame.size)
+        view.drawViewHierarchyInRect(view.frame, afterScreenUpdates: true)
         let memedImage: UIImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         return memedImage
@@ -143,7 +143,7 @@ class ViewController: UIViewController {
     
 }
 
-extension ViewController: UIImagePickerControllerDelegate {
+extension MemeViewController: UIImagePickerControllerDelegate {
     func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
         if let image = info[UIImagePickerControllerOriginalImage] as? UIImage {
             dispatch_async(dispatch_get_main_queue()) {
@@ -155,7 +155,7 @@ extension ViewController: UIImagePickerControllerDelegate {
     }
     
     func imagePickerControllerDidCancel(picker: UIImagePickerController) {
-        self.dismissViewControllerAnimated(true, completion: nil)
+        dismissViewControllerAnimated(true, completion: nil)
     }
     
     override func prefersStatusBarHidden() -> Bool {
@@ -164,11 +164,11 @@ extension ViewController: UIImagePickerControllerDelegate {
     
 }
 
-extension ViewController: UINavigationControllerDelegate {
+extension MemeViewController: UINavigationControllerDelegate {
     
 }
 
-extension ViewController: UITextFieldDelegate {
+extension MemeViewController: UITextFieldDelegate {
     
     func textFieldShouldBeginEditing(textField: UITextField) -> Bool {
         if textField.tag == 101 {
