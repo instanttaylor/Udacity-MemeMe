@@ -13,9 +13,10 @@ class MemeViewController: UIViewController {
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var cameraButton: UIBarButtonItem!
     @IBOutlet weak var topText: UITextField!
-    @IBOutlet weak var topToolbar: UIToolbar!
     @IBOutlet weak var bottomText: UITextField!
     @IBOutlet weak var bottomTextbottomConstraint: NSLayoutConstraint!
+    
+    @IBOutlet weak var topToolbar: UIToolbar!
     @IBOutlet weak var toolbar: UIToolbar!
     @IBOutlet weak var shareButton: UIBarButtonItem!
     
@@ -30,14 +31,12 @@ class MemeViewController: UIViewController {
     }
     
     func setupText(field: UITextField) {
-//        SETUP TEXT
         let memeTextAttributes = [
             NSStrokeColorAttributeName: UIColor.blackColor(),
             NSForegroundColorAttributeName: UIColor.whiteColor(),
             NSFontAttributeName: UIFont(name: "HelveticaNeue-CondensedBlack", size: 40)!,
             NSStrokeWidthAttributeName: -3.0
         ]
-        
         field.defaultTextAttributes = memeTextAttributes
         field.textAlignment = .Center
         field.autocapitalizationType = UITextAutocapitalizationType.AllCharacters
@@ -45,11 +44,13 @@ class MemeViewController: UIViewController {
     
     override func viewWillAppear(animated: Bool) {
         cameraButton.enabled = UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera)
+        tabBarController?.hidesBottomBarWhenPushed = true
         super.viewWillAppear(true)
     }
     
     override func viewWillDisappear(animated: Bool) {
         unSubscribeFromKeyboardNotifications()
+        setupFunctionality()
         super.viewWillDisappear(true)
     }
     
@@ -117,9 +118,10 @@ class MemeViewController: UIViewController {
         return memedImage
     }
 
-    
-    @IBAction func cancelTapped(sender: AnyObject) {
-        setupFunctionality()
+    func save(memedImage: UIImage) {
+        let meme = Meme(top: topText.text!, bottom: bottomText.text!, image: imageView.image!, memedImage: memedImage)
+        (UIApplication.sharedApplication().delegate as! AppDelegate).memes.append(meme)
+        
     }
     
     func setupFunctionality() {
@@ -129,19 +131,28 @@ class MemeViewController: UIViewController {
         shareButton.enabled = false
     }
     
+    @IBAction func doneTapped(sender: AnyObject) {
+        dismissViewControllerAnimated(true, completion: nil)
+    }
+    
     @IBAction func shareTapped(sender: AnyObject) {
-        
         topToolbar.hidden = true
         toolbar.hidden = true
         if let memedImage = generateMemedImage() {
             let av = UIActivityViewController(activityItems: [memedImage], applicationActivities: [])
+            save(memedImage)
             presentViewController(av, animated: true, completion: nil)
         }
-        toolbar.hidden = false
         topToolbar.hidden = false
+        toolbar.hidden = false
     }
     
+    override func prefersStatusBarHidden() -> Bool {
+        return true
+    }
 }
+
+
 
 extension MemeViewController: UIImagePickerControllerDelegate {
     func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
@@ -156,10 +167,6 @@ extension MemeViewController: UIImagePickerControllerDelegate {
     
     func imagePickerControllerDidCancel(picker: UIImagePickerController) {
         dismissViewControllerAnimated(true, completion: nil)
-    }
-    
-    override func prefersStatusBarHidden() -> Bool {
-        return true
     }
     
 }
