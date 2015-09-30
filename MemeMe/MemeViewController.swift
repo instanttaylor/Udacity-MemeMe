@@ -140,7 +140,11 @@ class MemeViewController: UIViewController {
         toolbar.hidden = true
         if let memedImage = generateMemedImage() {
             let av = UIActivityViewController(activityItems: [memedImage], applicationActivities: [])
-            save(memedImage)
+            av.completionWithItemsHandler = { (_, success, _, _) in
+                if success {
+                    self.save(memedImage)
+                }
+            }
             presentViewController(av, animated: true, completion: nil)
         }
         topToolbar.hidden = false
